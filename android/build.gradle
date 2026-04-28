@@ -26,17 +26,6 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
-// Fix for namespace issue in older plugins
-subprojects {
-    afterEvaluate { project ->
-        if (project.hasProperty('android')) {
-            if (project.android.namespace == null) {
-                project.android.namespace = project.group
-            }
-        }
-    }
-}
-
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
