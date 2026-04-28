@@ -13,15 +13,14 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
-// This is the safest way to inject namespaces into plugins that don't have them
-// without causing "already evaluated" errors.
+// Safely fix missing namespaces in plugins
 subprojects { subproject ->
-    afterEvaluate {
+    subproject.afterEvaluate {
         if (subproject.hasProperty('android')) {
-            subproject.android {
-                if (namespace == null) {
-                    namespace subproject.group
-                }
+            // Check if it's a library or application and has android extension
+            def android = subproject.extensions.findByName('android')
+            if (android != null && android.namespace == null) {
+                android.namespace = subproject.group
             }
         }
     }
