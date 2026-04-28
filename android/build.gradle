@@ -1,16 +1,3 @@
-buildscript {
-    ext.kotlin_version = '1.9.20'
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.0'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
-
 allprojects {
     repositories {
         google()
@@ -24,6 +11,20 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(':app')
+}
+
+// This is the safest way to inject namespaces into plugins that don't have them
+// without causing "already evaluated" errors.
+subprojects { subproject ->
+    afterEvaluate {
+        if (subproject.hasProperty('android')) {
+            subproject.android {
+                if (namespace == null) {
+                    namespace subproject.group
+                }
+            }
+        }
+    }
 }
 
 tasks.register("clean", Delete) {
