@@ -36,15 +36,32 @@ def flutterSdkPath = localProperties.getProperty("flutter.sdk")
 assert flutterSdkPath != null, "flutter.sdk not set in local.properties"
 apply from: "$flutterSdkPath/packages/flutter_tools/gradle/app_plugin_loader.gradle"
 
-// Inject namespace into plugins that don't have it, but do it at the settings level
-// to avoid "already evaluated" errors in build.gradle
+// Comprehensive fix for subprojects (plugins)
 gradle.beforeProject { project ->
     if (project != project.rootProject) {
         project.afterEvaluate {
             if (project.hasProperty('android')) {
                 def android = project.extensions.findByName('android')
-                if (android != null && android.namespace == null) {
-                    android.namespace = project.group
+                if (android != null) {
+                    // 1. Fix missing namespace
+                    if (android.namespace == null) {
+                        android.namespace = project.group
+                    }
+                    
+                    // 2. Fix JVM target inconsistency (Inconsistent JVM-target compatibility)
+                    android.compileOptions {
+                        sourceCompatibility JavaVersion.VERSION_17
+                        targetCompatibility JavaVersion.VERSION_17
+                    }
+                    
+                    // 3. Fix Kotlin JVM target
+                    if (project.plugins.hasPlugin('kotlin-android')) {
+                        project.kotlin {
+                            compilerOptions {
+                                jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+                            }
+                        }
+                    }
                 }
             }
         }
