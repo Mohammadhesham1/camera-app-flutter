@@ -26,14 +26,12 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
-// حل مشكلة الـ Namespace للإضافات القديمة تلقائياً
+// Fix for namespace issue in older plugins
 subprojects {
     afterEvaluate { project ->
         if (project.hasProperty('android')) {
-            project.android {
-                if (namespace == null) {
-                    namespace project.group
-                }
+            if (project.android.namespace == null) {
+                project.android.namespace = project.group
             }
         }
     }
