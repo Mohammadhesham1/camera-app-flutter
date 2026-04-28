@@ -35,3 +35,18 @@ if (localPropertiesFile.exists()) {
 def flutterSdkPath = localProperties.getProperty("flutter.sdk")
 assert flutterSdkPath != null, "flutter.sdk not set in local.properties"
 apply from: "$flutterSdkPath/packages/flutter_tools/gradle/app_plugin_loader.gradle"
+
+// Inject namespace into plugins that don't have it, but do it at the settings level
+// to avoid "already evaluated" errors in build.gradle
+gradle.beforeProject { project ->
+    if (project != project.rootProject) {
+        project.afterEvaluate {
+            if (project.hasProperty('android')) {
+                def android = project.extensions.findByName('android')
+                if (android != null && android.namespace == null) {
+                    android.namespace = project.group
+                }
+            }
+        }
+    }
+}
